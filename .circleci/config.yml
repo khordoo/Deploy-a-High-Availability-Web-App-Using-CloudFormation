@@ -65,7 +65,7 @@ jobs:
 
   test-frontend:
     docker:
-      # Docker image here
+      # Docker image here 2
     steps:
       # Checkout code from git
       # Restore from cache
