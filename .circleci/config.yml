@@ -105,7 +105,12 @@ jobs:
           name: "Scan frontend"
           command: | 
             cd frontend
-            npm audit --audit-level=critical   
+            npm audit --audit-level=critical  
+      - run:
+          name: "Fail"
+          when: on_fail
+          command: |
+            echo "Canceling workflow as a step resulted in failure" 
           
   scan-backend:
     docker:
@@ -119,7 +124,11 @@ jobs:
           command: | 
             cd backend
             npm audit --audit-level=critical
-
+      - run:
+          name: "Fail"
+          when: on_fail
+          command: |
+            echo "Canceling workflow as a step resulted in a failure" 
 
 workflows:
   default:
