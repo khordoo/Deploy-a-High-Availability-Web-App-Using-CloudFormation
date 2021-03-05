@@ -128,7 +128,7 @@ jobs:
           name: "Fail"
           when: on_fail
           command: |
-            echo "Canceling workflow as a step resulted in a failure" 
+            echo "Canceling workflow as a step resulted in failure" 
 
 workflows:
   default:
