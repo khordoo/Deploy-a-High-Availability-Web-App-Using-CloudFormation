@@ -177,8 +177,8 @@ jobs:
       #         --tags project=udapeople \
       #         --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
       #         --parameter-overrides ID=udapeople-${CIRCLE_WORKFLOW_ID}  
-
-       - run:  # ensure switch to circle id in names
+      # ensure switch to circle id in names
+      - run:  
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
