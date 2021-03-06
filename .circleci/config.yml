@@ -183,7 +183,12 @@ jobs:
             echo "[all]" > inventory.txt
             echo "${INSTANCE_PUBLIC_IP}" >> inventory.txt
             cat inventory.txt
-            
+            yum install tar       
+      - run:
+          name: Install tar
+          command: |
+            yum install tar -y
+
       - persist_to_workspace:
           root: ~/
           paths:
