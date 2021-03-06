@@ -169,15 +169,16 @@ jobs:
               --stack-name uda-backend \
               --parameter-overrides ID=34432dfdfdfggt  
               
-      - run:  
-          name: Ensure front-end infrastructure exist ..
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople \
-              --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
-              --parameter-overrides ID=udapeople-${CIRCLE_WORKFLOW_ID}  
-      ensure switch to circle id in names
+      # - run:  
+      #     name: Ensure front-end infrastructure exist ..
+      #     command: |
+      #       aws cloudformation deploy \
+      #         --template-file .circleci/files/frontend.yml \
+      #         --tags project=udapeople \
+      #         --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
+      #         --parameter-overrides ID=udapeople-${CIRCLE_WORKFLOW_ID}  
+      
+      #ensure switch to circle id in names swithc to above code
       - run:  
           name: Ensure front-end infrastructure exist
           command: |
@@ -213,20 +214,13 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: ubuntu:20.04
+      - image: ansible/ansible
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
-      - run:
-          name: Install dependencies
-          command: |
-            apt update
-            apt install ansible -y
-            ansible --version
       - attach_workspace:
           at: ~/
-
       - run:
           name: Configure server
           command: |
@@ -254,8 +248,8 @@ workflows:
           filters:
             branches:
               only: [test-feature-branch]
-      # - configure-infrastructure:
-      #     requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:
