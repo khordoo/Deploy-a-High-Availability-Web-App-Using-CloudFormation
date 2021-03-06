@@ -219,8 +219,10 @@ jobs:
           name: Install workspace dependencies
           command: |
             yum install tar gzip -y
+     
       - add_ssh_keys:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
+     
       - attach_workspace:
           at: ~/
       - run:

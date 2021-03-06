@@ -218,19 +218,21 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install dependencies
           command: |
+            yum install tar gzip -y
             amazon-linux-extras install ansible2 -y
             ansible --version
+      - attach_workspace:
+          at: ~/
+
       - run:
           name: Configure server
           command: |
-            ls 
+            ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
-            cd ansible
+            cd .circleci/ansible
             ansible-playbook -i inventory.txt  configure-server.yml 
       # Here's where you will add some code to rollback on failure      
 
