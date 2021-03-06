@@ -157,11 +157,11 @@ workflows:
       - build-backend:
           requires: [build-frontend]
       - test-frontend:
-          requires: [build-frontend]
+          requires: [build-frontend,build-backend]
       - test-backend:
           requires: [test-frontend]
       - scan-backend:
-          requires: [test-backend]
+          requires: [test-backend,test-frontend]
       - scan-frontend:
           requires: [scan-backend]
       
