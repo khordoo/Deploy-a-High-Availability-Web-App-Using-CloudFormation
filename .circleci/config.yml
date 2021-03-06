@@ -156,6 +156,8 @@ jobs:
   deploy-infrastructure: # ensure add -${CIRCLE_WORKFLOW_ID} to the end of stack names
     docker:
       - image: amazon/aws-cli
+    environment:
+      ANSIBLE_INVENTORY_PATH: .circleci/ansible/inventory.txt
     steps:
       - checkout
       - run:
@@ -180,10 +182,10 @@ jobs:
           name: Add back-end ip to ansible inventory
           command: |
             INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --output=text )   
-            echo "[all]" > inventory.txt
-            echo "${INSTANCE_PUBLIC_IP}" >> inventory.txt
-            ls
-            cat inventory.txt  
+            echo "[all]" > $ANSIBLE_INVENTORY_PATH
+            echo "${INSTANCE_PUBLIC_IP}" >> $ANSIBLE_INVENTORY_PATH
+            ls -la
+            cat $ANSIBLE_INVENTORY_PATH  
             pwd
 
       - run:
@@ -219,7 +221,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ls
+            ls 
             export ANSIBLE_HOST_KEY_CHECKING=False
             cd ansible
             ansible-playbook -i inventory.txt  configure-server.yml 
