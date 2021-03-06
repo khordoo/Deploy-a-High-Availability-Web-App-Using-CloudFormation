@@ -184,9 +184,9 @@ jobs:
             echo "${INSTANCE_PUBLIC_IP}" >> inventory.txt
             cat inventory.txt      
       - run:
-          name: Install tar
+          name: Install tar gzip
           command: |
-            yum install tar -y
+            yum install tar gzip -y
 
       - persist_to_workspace:
           root: ~/
