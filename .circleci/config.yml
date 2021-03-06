@@ -163,8 +163,7 @@ jobs:
       - run:
          name: Install awscli"
          command: |
-           apt-get install awscli -y
-           aws --version
+           which python3
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -175,7 +174,7 @@ jobs:
               --parameter-overrides ID=34432dfdfdfggt  
               
       # - run:  
-      #     name: Ensure front-end infrastructure exist
+      #     name: Ensure front-end infrastructure exist ..
       #     command: |
       #       aws cloudformation deploy \
       #         --template-file .circleci/files/frontend.yml \
