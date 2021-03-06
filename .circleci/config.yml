@@ -155,17 +155,11 @@ jobs:
   
   deploy-infrastructure: # ensure add -${CIRCLE_WORKFLOW_ID} to the end of stack names
     docker:
-      - image: ubuntu:20.04
+      - image: amazon/aws-cli
     environment:
       ANSIBLE_INVENTORY_PATH: .circleci/ansible/inventory.txt
     steps:
       - checkout
-      - run:
-         name: Install awscli"
-         command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            ./aws/install
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -175,15 +169,15 @@ jobs:
               --stack-name uda-backend \
               --parameter-overrides ID=34432dfdfdfggt  
               
-      # - run:  
-      #     name: Ensure front-end infrastructure exist ..
-      #     command: |
-      #       aws cloudformation deploy \
-      #         --template-file .circleci/files/frontend.yml \
-      #         --tags project=udapeople \
-      #         --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
-      #         --parameter-overrides ID=udapeople-${CIRCLE_WORKFLOW_ID}  
-      # ensure switch to circle id in names
+      - run:  
+          name: Ensure front-end infrastructure exist ..
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
+              --parameter-overrides ID=udapeople-${CIRCLE_WORKFLOW_ID}  
+      ensure switch to circle id in names
       - run:  
           name: Ensure front-end infrastructure exist
           command: |
