@@ -163,7 +163,9 @@ jobs:
       - run:
          name: Install awscli"
          command: |
-           which python3
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -258,8 +260,8 @@ workflows:
           filters:
             branches:
               only: [test-feature-branch]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
+      # - configure-infrastructure:
+      #     requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:
