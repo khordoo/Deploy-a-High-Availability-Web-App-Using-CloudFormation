@@ -153,7 +153,7 @@ jobs:
 
 
   
-  deploy-infrastructure:
+  deploy-infrastructure: # ensure add -${CIRCLE_WORKFLOW_ID} to the end of stack names
     docker:
       - image: amazon/aws-cli
     steps:
@@ -164,8 +164,8 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
-              --stack-name uda-backend-${CIRCLE_WORKFLOW_ID} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}  
+              --stack-name uda-backend \
+              --parameter-overrides ID=34432dfdfdfggt  
               
       - run:
           name: Ensure front-end infrastructure exist
@@ -182,9 +182,12 @@ jobs:
             INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --output=text )   
             echo "[all]" > inventory.txt
             echo "${INSTANCE_PUBLIC_IP}" >> inventory.txt
-            cat inventory.txt      
+            ls
+            cat inventory.txt  
+            pwd
+
       - run:
-          name: Install tar gzip
+          name: Install dependencies
           command: |
             yum install tar gzip -y
 
@@ -198,7 +201,29 @@ jobs:
               aws cloudformation delete-stack --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} 
               aws cloudformation delete-stack --stack-name uda-backend-${CIRCLE_WORKFLOW_ID} 
           when: on_fail  
-     
+
+  configure-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            amazon-linux-extras install ansible2 -y
+            ansible --version
+      - run:
+          name: Configure server
+          command: |
+            ls
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            cd ansible
+            ansible-playbook -i inventory.txt  configure-server.yml 
+      # Here's where you will add some code to rollback on failure      
 
 workflows:
   default:
