@@ -227,7 +227,7 @@ jobs:
             ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt  configure-server.yml 
+            ansible-playbook -i inventory.txt  configure-server.yml -vvv
       # Here's where you will add some code to rollback on failure      
 
 workflows:
