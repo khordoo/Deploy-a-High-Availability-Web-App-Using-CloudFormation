@@ -8,10 +8,22 @@
     - ansible_python_interpreter: /usr/bin/python3
     - ansible_host_key_checking: false
     - ansible_stdout_callback: yaml
-
+  
+  environment:
+    ENVIRONMENT: production
+    TYPEORM_CONNECTION: postgres
+    TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
+    TYPEORM_HOST: {your postgres database hostname in RDS}
+    TYPEORM_PORT: 5532 (or the port from RDS if it’s different)
+    TYPEORM_USERNAME: {your postgres database username in RDS}
+    TYPEORM_PASSWORD: {your postgres database password in RDS}
+    TYPEORM_DATABASE: {your postgres database name in RDS}
   pre_tasks:
-    - shell: sleep(6)
-    - shell: python3 --version
+    - name: "wait 600 seconds for target connection to become reachable/usable."
+      shell: sleep 2
+
+    - name: "install python for Ansible."
+      shell: echo python3 --version
 
   roles:
     - configure-server
