@@ -1,0 +1,13 @@
+- name: "install apache"
+  become: true 
+  shell: yum install -y httpd 
+
+- name: "copy index web files"
+  become: true 
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+
+- name: "run apache server"
+  become: true 
+  shell:  systemctl start httpd.service   

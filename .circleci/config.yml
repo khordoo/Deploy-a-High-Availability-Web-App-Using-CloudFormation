@@ -213,7 +213,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.8-slim
     steps:
       - checkout
       - add_ssh_keys:
@@ -221,8 +221,10 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install tar gzip -y
-            amazon-linux-extras install ansible2 -y
+            apt-get install tar gzip -y
+            apt install software-properties-common -y
+            apt-add-repository --yes --update ppa:ansible/ansible
+            apt install ansible -y
             ansible --version
       - attach_workspace:
           at: ~/
