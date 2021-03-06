@@ -214,7 +214,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: ansible/ansible
+      - image: williamyeh/ansible:ubuntu18.04
     steps:
       - checkout
       - add_ssh_keys:
