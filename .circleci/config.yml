@@ -182,8 +182,7 @@ jobs:
             INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --output=text )   
             echo "[all]" > inventory.txt
             echo "${INSTANCE_PUBLIC_IP}" >> inventory.txt
-            cat inventory.txt
-            yum install tar       
+            cat inventory.txt      
       - run:
           name: Install tar
           command: |
