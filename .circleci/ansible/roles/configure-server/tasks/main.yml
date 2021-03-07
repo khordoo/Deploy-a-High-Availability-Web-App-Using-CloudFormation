@@ -3,12 +3,11 @@
 #   shell: |
 #     echo "ENVIRONMENT:production" > .env
 #     echo "TYPEORM_USERNAME:$TYPEORM_USERNAME" >> .env
-#     echo "DUMMY_ENV_VAR:{{ lookup('env','DUMMY_ENV_VAR') }}" >> .env
-   
-    
+#     echo "TYPEORM_USERNAME2:{{ lookup('env','TYPEORM_USERNAME') }} >> .env
+#     # echo "DUMMY_ENV_VAR:{{ lookup('env','DUMMY_ENV_VAR') }}" >> .env
 #     # TYPEORM_CONNECTION: postgres
 #     # TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
-#     # echo TYPEORM_HOST: "{{ lookup('env','TYPEORM_HOST') }}"
+#     echo TYPEORM_HOST2: "{{ lookup('env','TYPEORM_USERNAME') }}"
 #     # TYPEORM_PORT: 5432 
     
 #     # TYPEORM_PASSWORD: "{{ lookup('env','TYPEORM_PASSWORD') }}"
