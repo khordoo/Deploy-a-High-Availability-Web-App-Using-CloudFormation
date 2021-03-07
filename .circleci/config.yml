@@ -245,12 +245,16 @@ jobs:
   run-migrations:
     docker:
       - image: node
+    
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/
       - run:
           name: Run migrations
           command: |
             cd backend/
+            npm run build
             npm run migrations
       - run:
           name: Send migration results to memstash
