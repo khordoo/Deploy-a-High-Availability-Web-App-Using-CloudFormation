@@ -279,18 +279,25 @@ jobs:
             echo TYPEORM_PASSWORD=postgres >> backend/.env
             echo TYPEORM_DATABASE=glee >> backend/.env
 
+            ls -la 
+            cat backend/.env
+
       - run:
           name: Run migrations
           command: |
-            ls
             cd backend/
-            ls -la
+            ls
             cat .env
-            echo $TYPEORM_HOST
             npm install
-            npm run build
-            result=$(npm run migrations)
-            echo $result
+            npm run migrations
+            
+       - run:
+          name: Run actual migrations
+          command: |
+            pwd
+            cd backend/
+            npm run migrations
+      
       - run:
           name: Send migration results to memstash
           command: |
