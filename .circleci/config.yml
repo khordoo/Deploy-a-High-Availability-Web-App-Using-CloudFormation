@@ -291,7 +291,7 @@ jobs:
             npm install
             npm run migrations
             
-       - run:
+      - run:
           name: Run actual migrations
           command: |
             pwd
