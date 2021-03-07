@@ -215,14 +215,23 @@ jobs:
   configure-infrastructure:
     docker:
       - image: williamyeh/ansible:ubuntu18.04
+    environment:
+       TYPEORM_USERNAME: $TYPEORM_USERNAME 
+      
     steps:
+      
       - checkout
       - add_ssh_keys:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
       - attach_workspace:
           at: ~/
+      - run : 
+         name: "check env varibales"  
+         command:  echo $TYPEORM_USERNAME 
       - run:
           name: Configure server
+          environment:
+            DUMMY_ENV_VAR: hello_there
           command: |
             ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
@@ -239,7 +248,15 @@ jobs:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
       - attach_workspace:
           at: ~/
-        # Here's where you will add some code to rollback on failure  
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure  
   
 
 workflows:

@@ -1,3 +1,19 @@
+# - name: "Create configuration file"
+#   become: true 
+#   shell: |
+#     echo "ENVIRONMENT:production" > .env
+#     echo "TYPEORM_USERNAME:$TYPEORM_USERNAME" >> .env
+#     echo "DUMMY_ENV_VAR:{{ lookup('env','DUMMY_ENV_VAR') }}" >> .env
+   
+    
+#     # TYPEORM_CONNECTION: postgres
+#     # TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
+#     # echo TYPEORM_HOST: "{{ lookup('env','TYPEORM_HOST') }}"
+#     # TYPEORM_PORT: 5432 
+    
+#     # TYPEORM_PASSWORD: "{{ lookup('env','TYPEORM_PASSWORD') }}"
+#     # TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
+
 - name: "Install dependencies"
   become: true 
   shell: |
@@ -5,4 +21,3 @@
    apt install nodejs npm -y
    npm install pm2 -g -y
    nodejs --version
-
