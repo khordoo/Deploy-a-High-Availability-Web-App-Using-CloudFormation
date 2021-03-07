@@ -4,4 +4,4 @@
    apt install nodejs npm -y
    npm install pm2 -g -y
    nodejs --version
-   pm2 start backend/dist/main.js
+   #pm2 start backend/dist/main.js

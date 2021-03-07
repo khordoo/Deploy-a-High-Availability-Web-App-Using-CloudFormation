@@ -22,8 +22,78 @@
     - name: "wait 600 seconds for target connection to become reachable/usable."
       shell: sleep 2
 
-    - name: "install python for Ansible."
-      shell: echo python3 --version
+    # - name: "Install docker for local testing"
+    #   become: true
+    #   shell: | 
+    #     if dpkg-query -l docker
+    #     then 
+    #        echo "DOcker exist skipping"
+    #     else
+    #       apt install docker.io -y
+    #       systemctl enable --now docker
+    #       docker --version
+    #     fi
+        
+    #     if dpkg-query -l docker-compose
+    #     then 
+    #        echo "docker-compose already installed"
+    #     else
+    #       curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)"  -o /usr/local/bin/docker-compose
+    #       mv /usr/local/bin/docker-compose /usr/bin/docker-compose
+    #       chmod +x /usr/bin/docker-compose
+    #     fi
+
+ 
+        
+    - name: "Create .env file"
+      become: true
+      shell: |
+        cd /home/ubuntu/
+        echo "VERSION=1" >.env
+        echo TYPEORM_CONNECTION=postgres >>.env
+        echo TYPEORM_MIGRATIONS_DIR=./src/migrations >>.env
+        echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >>.env
+        echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >>.env
+        echo TYPEORM_HOST=localhost >>.env
+        echo TYPEORM_PORT=5432 >>.env
+        echo TYPEORM_USERNAME=postgres >>.env
+        echo TYPEORM_PASSWORD=password >>.env
+        echo TYPEORM_DATABASE=glee  >>.env
+
+    # - name: "Copy docker compose for local testing"
+    #   become: true
+    #   copy:    
+    #       src: /home/adminn/projects/udacity/dev-ops/projects/udacity-devops-cicd-project/util/docker-compose.yml
+    #       dest: /home/ubuntu/docker-compose.yml
+
+    # - name: "Copy packe.sjon"
+    #   become: true
+    #   copy:    
+    #       src: /home/adminn/projects/udacity/dev-ops/projects/udacity-devops-cicd-project/backend/package.json
+    #       dest: /home/ubuntu/package.json 
+
+    # - name: "Copy packe.sjon"
+    #   become: true
+    #   copy:    
+    #       src: /home/adminn/projects/udacity/dev-ops/projects/udacity-devops-cicd-project/backend/package-lock.json
+    #       dest: /home/ubuntu/package-lock.json      
+    
+    # - name: "Copy backend folder"
+    #   become: true
+    #   copy:    
+    #       src: /home/adminn/projects/udacity/dev-ops/projects/udacity-devops-cicd-project/backend/dist/
+    #       dest: /home/ubuntu/
+    
+    # - name: "Uncompress backend"
+    #   become: true
+    #   shell: |
+    #     cd /home/ubuntu
+    #     tar -xvf deploy.tar.gz
+
+
+
+
+
 
   roles:
     - configure-server
