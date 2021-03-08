@@ -4,6 +4,11 @@
     src: /root/project/backend.tar.gz
     dest: /home/ubuntu/
 
+- name: "UnZip Backend"
+  shell: |
+    cd /home/ubuntu/backend
+    tar -xvf /root/project/backend.tar.gz
+
 # - name: "Run server"
 #   shell: |
 #     cd ~/backeend
