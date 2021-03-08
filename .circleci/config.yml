@@ -311,6 +311,23 @@ jobs:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
       - attach_workspace:
           at: ~/
+
+      - run:
+          name: Create Env file
+          command: |
+            cd /root/project/backend/
+            echo NODE_ENV=local > .env
+            echo VERSION=1 >>.env
+            echo TYPEORM_CONNECTION=postgres >>.env
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >>.env
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >>.env
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >>.env 
+            echo TYPEORM_HOST=$TYPEORM_HOST >>.env 
+            echo TYPEORM_PORT=$TYPEORM_PORT >>.env 
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >>.env 
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >>.env 
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >>.env 
+            cat .env   
       - run:
           name: Compress Backend files
           command: |
@@ -348,12 +365,12 @@ workflows:
       #     requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
-      # - run-migrations
+        - run-migrations
      
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-        - deploy-backend
-     
+        - deploy-frontend:
+            requires: [run-migrations, deploy-backend]
+        - deploy-backend:
+            requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
       # - smoke-test:
