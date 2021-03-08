@@ -10,6 +10,15 @@
   become: true
   shell: |
     tar -xvf /home/ubuntu/backend.tar.gz --strip=2
+    rm -f /home/ubuntu/backend.tar.gz
+   
+
+- name: "Install and run Server"
+  become: true
+  shell: |
+    cd /home/ubuntu/backend
+    npm install
+     
 
 # - name: "Run server"
 #   shell: |
