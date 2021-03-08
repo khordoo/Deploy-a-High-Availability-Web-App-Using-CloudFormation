@@ -17,17 +17,35 @@
   shell: |
     apt update
     apt-get install nodejs npm -y 
+    npm install pm2@latest -g
+    pm2 status
     node --version
+    pm2 -v
 
-- name: "Install and run Server"
+- name: "Build Server"
   become: true
   shell: |
     cd /home/ubuntu/backend
     npm install
+    npm run build
 
 
-# - name: "Run server"
-#   shell: |
-#     cd ~/backeend
-#     npm install
-#     npm run start
+
+- name: "Run Server"
+  become: yes
+  # become_user: root
+  shell: |
+    cd /home/ubuntu/backend
+    # export NODE_ENV=local
+    # export VERSION=1
+    # export TYPEORM_CONNECTION=postgres
+    # export TYPEORM_MIGRATIONS_DIR=/home/ubuntu/backend/src/migrations
+    # export TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity.ts
+    # export TYPEORM_MIGRATIONS=/home/ubuntu/backend/src/migrations/*.ts
+    # export TYPEORM_HOST=database-1.cykjtflsb0hn.us-west-2.rds.amazonaws.com
+    # export TYPEORM_PORT=5432
+    # export TYPEORM_USERNAME=postgres
+    # export TYPEORM_PASSWORD=postgres
+    # export TYPEORM_DATABASE=glee
+    # pm2 start ./dist/main.js --name  backend --update-env
+
