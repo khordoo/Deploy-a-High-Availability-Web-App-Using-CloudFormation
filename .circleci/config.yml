@@ -352,17 +352,27 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            API_URL=$(tail -1 .circleci/ansible/inventory.txt):3030)
+            export API_URL=$(tail -1 .circleci/ansible/inventory.txt):3030/api/status)
             echo $API_URL
+           
+
       - run:
           name: Backend smoke test.
           command: |
-            # your code here
+             curl -s ${API_URL}
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
+            #URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com"
+            URL="http://udapeople-udapeople-34432dfdfdfggt.s3-website-us-east-1.amazonaws.com"
+            if curl -s ${URL} | grep "Welcome"
+            then
+               exit 0
+            else
+               exit 1
+            fi
       # Here's where you will add some code to rollback on failure.  
+      # Rmeover to use URL with workflow s3 path
 
 workflows:
   default:
@@ -377,7 +387,7 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-        - deploy-infrastructure
+        # - deploy-infrastructure
       # - deploy-infrastructure:
       #     # requires: [test-frontend]
       #     filters:
@@ -387,16 +397,16 @@ workflows:
       #     requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
-        - run-migrations:
-            requires: [deploy-infrastructure]
+        # - run-migrations:
+        #     requires: [deploy-infrastructure]
         # - deploy-frontend:
         #     requires: [run-migrations, deploy-backend]
-        - deploy-backend:
-            requires: [run-migrations]
+        # - deploy-backend:
+        #     requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
-        # - smoke-test:
-        #   requires: [deploy-backend]
+        - smoke-test
+         
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
