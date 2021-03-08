@@ -33,9 +33,12 @@
 
 - name: "Run Server"
   become: yes
-  # become_user: root
+  become_user: root
   shell: |
     cd /home/ubuntu/backend
+    export TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity{.ts,.js}
+    pm2 start ./dist/main.js
+    # npm run start:prod
     # export NODE_ENV=local
     # export VERSION=1
     # export TYPEORM_CONNECTION=postgres
