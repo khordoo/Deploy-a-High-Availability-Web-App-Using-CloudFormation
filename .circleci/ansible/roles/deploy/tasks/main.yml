@@ -4,11 +4,12 @@
     src: /root/project/backend.tar.gz
     dest: /home/ubuntu/
     owner: ubuntu
+    group: ubuntu
 
 - name: "Uncompress Backend"
+  become: true
   shell: |
-    cd /home/ubuntu/backend
-    tar -xvf /root/project/backend.tar.gz
+    tar -xvf /home/ubuntu/backend.tar.gz --strip=2
 
 # - name: "Run server"
 #   shell: |
