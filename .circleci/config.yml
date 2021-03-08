@@ -178,7 +178,7 @@ jobs:
       #         --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
       #         --parameter-overrides ID=udapeople-${CIRCLE_WORKFLOW_ID}  
       
-      #ensure switch to circle id in names swithc to above code
+      #Make sure  switch to circle id in names swithc to above code for ID
       - run:  
           name: Ensure front-end infrastructure exist
           command: |
@@ -284,21 +284,24 @@ jobs:
             yum -y install curl
             curl -sL https://rpm.nodesource.com/setup_12.x |  bash -
             yum install -y nodejs  npm  
-            cd backend/
+            cd frontend/
             npm install 
-            npm run build 
+            # npm run build 
       - run:
           name: Get backend url
           command: |
-            # your code here
-            pwd
             export API_URL="http://$(tail -1 .circleci/ansible/inventory.txt):3030"
             echo "${API_URL}"
+            pwd
+            cd frontend
+            npm run build
       - run:
           name: Deploy frontend objects
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure    
+            cd frontend
+            aws s3 cp  --recursive  dist/  s3://udapeople-udapeople-34432dfdfdfggt/ 
+      # Remeebr to use WORKD_FLOW_ID in the name of s3
+      # Here's where you will addsome code to rollback on failure    
 
 
 workflows:
