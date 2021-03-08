@@ -302,6 +302,28 @@ jobs:
             aws s3 cp  --recursive  dist/  s3://udapeople-udapeople-34432dfdfdfggt/ 
       # Remeebr to use WORKD_FLOW_ID in the name of s3
       # Here's where you will addsome code to rollback on failure    
+  deploy-backend:
+    docker:
+      - image: williamyeh/ansible:ubuntu18.04
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            ls 
+            cd .circleci/ansible
+            ls 
+            cat inventory.txt
+      - run:
+          name: Deploy backend
+          command: |
+            echo TODO  
+            
+      # Here's where you will add some code to rollback on failure  
 
 
 workflows:
@@ -327,9 +349,11 @@ workflows:
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - run-migrations
-      - deploy-frontend
+     
       # - deploy-frontend:
       #     requires: [run-migrations]
+      - deploy-backend
+     
       # - deploy-backend:
       #     requires: [run-migrations]
       # - smoke-test:
