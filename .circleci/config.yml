@@ -312,10 +312,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Zip Backend
+          name: Compress Backend files
           command: |
             tar -czvf /root/project/backend.tar.gz /root/project/backend/
-            ls
       - run:
           name: Deploy backend
           command: |

@@ -3,8 +3,9 @@
   copy:
     src: /root/project/backend.tar.gz
     dest: /home/ubuntu/
+    owner: ubuntu
 
-- name: "UnZip Backend"
+- name: "Uncompress Backend"
   shell: |
     cd /home/ubuntu/backend
     tar -xvf /root/project/backend.tar.gz
