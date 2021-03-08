@@ -225,15 +225,7 @@ jobs:
           fingerprints: ["a5:c1:42:5d:4b:2c:12:c8:75:66:63:b5:75:77:2b:20"]
       - attach_workspace:
           at: ~/
-      # - run : 
-      #    name: "check env varibales"  
-      #    command: |
-      #       echo  "1" > migrationStatus.txt
-      #       MEMSTASH_KEY=migration_${CIRCLE_WORKFLOW_ID}
-      #       echo $MEMSTASH_KEY
-      #       curl -H "Content-Type: text/plain" -H "token:${MEMSTASH_API_TOKEN}" --request PUT --data "$(cat migrationStatus.txt)" https://api.memstash.io/values/${MEMSTASH_KEY}
-         
-
+      
       - run:
           name: Configure server
           environment:
@@ -281,6 +273,34 @@ jobs:
             
      # Here's where you will add some code to rollback on failure  
 
+  deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install curl
+            curl -sL https://rpm.nodesource.com/setup_12.x |  bash -
+            yum install -y nodejs  npm  
+            cd backend/
+            npm install 
+            npm run build 
+      - run:
+          name: Get backend url
+          command: |
+            # your code here
+            pwd
+            export API_URL="http://$(tail -1 .circleci/ansible/inventory.txt):3030"
+            echo "${API_URL}"
+      - run:
+          name: Deploy frontend objects
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure    
+
+
 workflows:
   default:
     jobs:
@@ -303,8 +323,8 @@ workflows:
       #     requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
-      - run-migrations
-         
+      # - run-migrations
+      - deploy-frontend
       # - deploy-frontend:
       #     requires: [run-migrations]
       # - deploy-backend:
