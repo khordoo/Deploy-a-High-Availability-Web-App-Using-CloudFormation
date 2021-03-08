@@ -312,16 +312,16 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Install dependencies
+          name: Zip Backend
           command: |
-            ls 
-            cd .circleci/ansible
-            ls 
-            cat inventory.txt
+            tar -czvf /root/project/backend.tar.gz /root/project/backend/
+            ls
       - run:
           name: Deploy backend
           command: |
-            echo TODO  
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt  deploy-backend.yml -vvv 
             
       # Here's where you will add some code to rollback on failure  
 
@@ -339,6 +339,7 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
+        # - deploy-infrastructure
       # - deploy-infrastructure:
       #     # requires: [test-frontend]
       #     filters:
@@ -352,7 +353,7 @@ workflows:
      
       # - deploy-frontend:
       #     requires: [run-migrations]
-      - deploy-backend
+        - deploy-backend
      
       # - deploy-backend:
       #     requires: [run-migrations]

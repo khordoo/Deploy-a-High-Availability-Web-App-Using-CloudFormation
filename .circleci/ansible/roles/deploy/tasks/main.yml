@@ -1,13 +1,11 @@
-- name: "Create backend deployment folder"
-  become: true 
-  shell: | 
-    mkdir -p /opt/app/backend
-
 - name: "copy backend files"
   become: true 
   copy:
-    src: ~/projects/udacity/dev-ops/projects/udacity-devops-cicd-project/backend/dist/
-    dest: /opt/app/backend/
+    src: /root/project/backend.tar.gz
+    dest: /home/ubuntu/
 
-- name: "copy done"
-  shell: echo "Done" 
+# - name: "Run server"
+#   shell: |
+#     cd ~/backeend
+#     npm install
+#     npm run start
