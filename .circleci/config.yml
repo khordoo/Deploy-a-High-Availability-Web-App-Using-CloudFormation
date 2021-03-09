@@ -3,18 +3,18 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.3.0
 
-# commands:
-#   destroy-environment:
-#     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-#     parameters:
-#       # Add parameter here   
-#     steps:
-#       - run:
-#           name: Destroy environments
-#           when: on_fail
-#           command: |
-#             # Your code here
-#             exit 1
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      # Add parameter here   
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            # Your code here
+            exit 1
 
 #   revert-migrations:
 #     description: Revert the last migration if successfully run in the current workflow.
@@ -357,15 +357,6 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            # /bin/sh -c "echo Hello World"
-            # /bin/sh -c "API_URL=$(tail -1 .circleci/ansible/inventory.txt):3030/api/status"
-            # /bin/sh -c "echo $API_URL"
-            # bash
-            # echo "Hello there"
-            # API_URL=$(tail -1 .circleci/ansible/inventory.txt):3030/api/status
-            # echo "${API_URL}"
-            ls -la
-            tail -1 .circleci/ansible/inventory.txt
             API_URL=http://$(tail -1 .circleci/ansible/inventory.txt):3030/api/status 
             echo $API_URL
             echo $API_URL > api_url.txt
@@ -374,19 +365,19 @@ jobs:
           name: Backend smoke test.
           command: |
              curl -s $(cat api_url.txt)
-      # - run:
-      #     name: Frontend smoke test.
-      #     command: |
-      #       #URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com"
-      #       URL="http://udapeople-udapeople-34432dfdfdfggt.s3-website-us-east-1.amazonaws.com"
-      #       if curl -s ${URL} | grep "Welcome"
-      #       then
-      #          exit 0
-      #       else
-      #          exit 1
-      #       fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            #URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-west-2.amazonaws.com"
+            URL="http://udapeople-udapeople-34432dfdfdfggt.s3-website-us-west-2.amazonaws.com/"
+            if curl -s ${URL} | grep "Welcome"
+            then
+               exit 0
+            else
+               exit 1
+            fi
       # Here's where you will add some code to rollback on failure.  
-      # Rmeover to use URL with workflow s3 path
+      # Rmeover to use URL with workflow s3 path.
 
 workflows:
   default:
@@ -401,7 +392,7 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-        # - deploy-infrastructure
+        - deploy-infrastructure
       # - deploy-infrastructure:
       #     # requires: [test-frontend]
       #     filters:
@@ -419,7 +410,7 @@ workflows:
         #     requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
-        - smoke-test
+        # - smoke-test
          
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
