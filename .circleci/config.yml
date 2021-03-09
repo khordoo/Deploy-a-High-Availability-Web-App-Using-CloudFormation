@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.3.0
 
-commands:
+commands:   # Remeebr to use dynamic workflow id in these codes..
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -23,24 +23,36 @@ commands:
             aws cloudformation delete-stack --stack-name "uda-backend"  
 
 
-#   revert-migrations:
-#     description: Revert the last migration if successfully run in the current workflow..
-#     parameters:
-#       # Add parameter here     
-#     steps:
-#       - run:
-#           name: Revert migrations
-#           # Add when this will run
-#           command: |
-#             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#             SUCCESS = 1
-#             if(( $SUCCESS==1 )); 
-#             then
-#             #  cd ~/project/backend
-#             #  npm install
-#             #  Add revert code here. You can find this in the Getting Started section.
-#               exit 1
-#             fi
+
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow..
+    parameters:
+      workflow_id:
+        type: string     
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            
+            MEMSTASH_KEY="migration_<<parameters.workflow_id>>"
+            echo $MEMSTASH_KEY
+
+            # revmoe after testing 
+            MEMSTASH_KEY=udapeople
+            MEMSTASH_API_TOKEN=7f11eee2-7fe8-4f2b-9e0b-27669fed942e
+            SUCCESS=$(curl -H "Content-Type: text/plain" -H "token:${MEMSTASH_API_TOKEN}" --request GET "https://api.memstash.io/values/${MEMSTASH_KEY}")
+            echo $SUCCESS
+            # SUCCESS = 1
+            if [ $SUCCESS=="1" ]
+            then
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert
+              echo "Migration revered"
+            else 
+              echo "Nothing to revent.All good."
+            fi
             
 jobs:
   build-frontend:
@@ -399,6 +411,8 @@ jobs:
             fi
       - destroy-environment:
           workflow_id: udapeople-34432dfdfdfggt
+      - revert-migrations:
+           workflow_id: udapeople-34432dfdfdfggt
       # Here's where you will add some code to rollback on failure.  
       # Rmeover to use URL with workflow s3 path.
 
@@ -415,7 +429,7 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-        - deploy-infrastructure
+        # - deploy-infrastructure
       # - deploy-infrastructure:
       #     # requires: [test-frontend]
       #     filters:
@@ -433,8 +447,8 @@ workflows:
         #     requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
-        - smoke-test:
-            requires: [deploy-infrastructure]
+        - smoke-test
+            # requires: [deploy-infrastructure]
          
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
