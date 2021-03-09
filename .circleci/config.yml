@@ -14,12 +14,17 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-<<parameters.workflow_id>>/" --recursive
-            aws cloudformation delete-stack --stack-name "uda-frontend-<<parameters.workflow_id>>" 
-            aws cloudformation delete-stack --stack-name "uda-backend-<<parameters.workflow_id>>"  
+            # aws s3 rm "s3://udapeople-<<parameters.workflow_id>>/" --recursive
+            # aws cloudformation delete-stack --stack-name "uda-frontend-<<parameters.workflow_id>>" 
+            # aws cloudformation delete-stack --stack-name "uda-backend-<<parameters.workflow_id>>"  
+
+            aws s3 rm s3://udapeople-udapeople-34432dfdfdfggt/ --recursive
+            aws cloudformation delete-stack --stack-name "uda-frontend" 
+            aws cloudformation delete-stack --stack-name "uda-backend"  
+
 
 #   revert-migrations:
-#     description: Revert the last migration if successfully run in the current workflow.
+#     description: Revert the last migration if successfully run in the current workflow..
 #     parameters:
 #       # Add parameter here     
 #     steps:
@@ -356,6 +361,14 @@ jobs:
             apk add --update curl && \
             rm -rf /var/cache/apk/*
             apk add bash
+            apk add --no-cache \
+            python3 \
+            py3-pip \
+            && pip3 install --upgrade pip \
+            && pip3 install \
+                awscli \
+            && rm -rf /var/cache/apk/*
+            aws --version
       - run:
           name: Get backend url
           command: |
@@ -366,14 +379,13 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            if curl -s $(cat api_url.txt)
+            if curl -s $(cat api_url.txt) --connect-timeout 5
             then
                exit 0
             else 
                exit 1 
             fi 
-          timeout: 30  
-
+          
       - run:
           name: Frontend smoke test.
           command: |
@@ -421,7 +433,8 @@ workflows:
         #     requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
-        - smoke-test
+        - smoke-test:
+            requires: [deploy-infrastructure]
          
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
