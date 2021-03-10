@@ -18,10 +18,7 @@ commands:   # Remeebr to use dynamic workflow id in these codes..
             aws cloudformation delete-stack --stack-name "uda-frontend-<<parameters.workflow_id>>" 
             aws cloudformation delete-stack --stack-name "uda-backend-<<parameters.workflow_id>>"  
 
-            # aws s3 rm s3://udapeople-udapeople-34432dfdfdfggt/ --recursive
-            # aws cloudformation delete-stack --stack-name "uda-frontend" 
-            # aws cloudformation delete-stack --stack-name "uda-backend"  
-
+          
 
   # remove hard code api key and cash id.
   revert-migrations:
@@ -172,7 +169,7 @@ jobs:
 
 
   
-  deploy-infrastructure: # ensure add -${CIRCLE_WORKFLOW_ID} to the end of stack names
+  deploy-infrastructure: 
     docker:
       - image: amazon/aws-cli
     environment:
@@ -185,7 +182,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
-              --stack-name uda-backend \
+              --stack-name uda-backend-${CIRCLE_WORKFLOW_ID}  \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}  
               
       - run:  
@@ -196,16 +193,7 @@ jobs:
               --tags project=udapeople \
               --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}  
-      
-      #Make sure  switch to circle id in names swithc to above code for ID
-      # - run:  
-      #     name: Ensure front-end infrastructure exist
-      #     command: |
-      #       aws cloudformation deploy \
-      #         --template-file .circleci/files/frontend.yml \
-      #         --tags project=udapeople \
-      #         --stack-name uda-frontend \
-      #         --parameter-overrides ID=udapeople-34432dfdfdfggt  
+   
 
       - run:
           name: Add back-end ip to ansible inventory
@@ -259,10 +247,7 @@ jobs:
   run-migrations:
     docker:
       - image: node:12.21.0
-  
-    
-    # Remeebr to update the RDS host name in the project settings
-    # Remeebr to update MEMSTASH_API_KEY
+
     steps:
       - checkout
       - run:
@@ -318,7 +303,7 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            aws s3 cp  --recursive  dist/  s3://udapeople-udapeople-34432dfdfdfggt/ 
+            aws s3 cp  --recursive  dist/  s3://udapeople-${CIRCLE_WORKFLOW_ID}/ 
       # Remeebr to use WORKD_FLOW_ID in the name of s3
       # Here's where you will addsome code to rollback on failure    
   deploy-backend:
@@ -404,8 +389,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            #URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-west-2.amazonaws.com"
-            URL="http://udapeople-udapeople-34432dfdfdfggt.s3-website-us-west-2.amazonaws.com/"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-west-2.amazonaws.com"
             if curl -s ${URL} | grep "Welcome"
             then
                exit 0
@@ -413,12 +397,12 @@ jobs:
                exit 1
             fi
       - destroy-environment:
-          workflow_id: udapeople-34432dfdfdfggt
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
       - revert-migrations:
-           workflow_id: udapeople-34432dfdfdfggt
+           workflow_id: ${CIRCLE_WORKFLOW_ID}
       # Here's where you will add some code to rollback on failure.  
       # Rmeover to use URL with workflow s3 path.
-  #remeebr use dynamic workflow id for removal
+  #remeebr use dynamic workflow id for removal..
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
@@ -428,10 +412,10 @@ jobs:
           name: Update cloudfront distribution
           command: |
             aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
+              --template-file .circleci/files/cloudfront.yml \
               --tags project=udapeople \
-              --stack-name uda-frontend \
-              --parameter-overrides ID=udapeople-34432dfdfdfggt-new      
+              --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}      
       # Here's where you will add some code to rollback on failure  
 
   cleanup:
@@ -454,9 +438,9 @@ jobs:
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "new is not equal old deployment, so deleting the old deployemn the"
-              aws s3 rm s3://udapeople-udapeople-34432dfdfdfggt/ --recursive
-              aws cloudformation delete-stack --stack-name "uda-frontend" 
-              aws cloudformation delete-stack --stack-name "uda-backend"   
+              aws s3 rm s3://udapeople-${OldWorkflowID}/ --recursive
+              aws cloudformation delete-stack --stack-name uda-frontend-${OldWorkflowID}
+              aws cloudformation delete-stack --stack-name uda-backend-${OldWorkflowID}   
          
             fi
 workflows:
@@ -464,16 +448,21 @@ workflows:
     jobs:
       - build-frontend
       - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
+      # - test-frontend:
+      #     requires: [build-frontend]
+      # - test-backend:
+      #     requires: [build-backend]
+      # - scan-backend:
+      #     requires: [build-backend]
+      # - scan-frontend:
+      #     requires: [build-frontend]
+      # - deploy-infrastructure:
+      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     filters:
+      #       branches:
+      #         only: [test-feature-branch]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [build-frontend, build-backend ]
           filters:
             branches:
               only: [test-feature-branch]
@@ -489,5 +478,5 @@ workflows:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
-      # - cleanup:
-      #     requires: [cloudfront-update]
+      - cleanup:
+          requires: [cloudfront-update]
