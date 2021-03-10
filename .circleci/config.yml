@@ -418,19 +418,36 @@ jobs:
            workflow_id: udapeople-34432dfdfdfggt
       # Here's where you will add some code to rollback on failure.  
       # Rmeover to use URL with workflow s3 path.
+  #remeebr use dynamic workflow id for removal
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
-      - run:
-          name: Install dependencies
-          command: |
-            # your code here
+      - checkout
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
+            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[0].Value")
+            echo old worflow id is:"${OLD_WORKFLOW_ID}"
+            
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+
+            
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name uda-frontend \
+              --parameter-overrides ID=udapeople-34432dfdfdfggt-new
+            
+            if [[ "${STACKS[@]}" =~ "${OLD_WORKFLOW_ID}"   ]]
+            then
+              echo "new is not equal old deployment delete the"
+              aws s3 rm s3://udapeople-udapeople-34432dfdfdfggt/ --recursive
+              aws cloudformation delete-stack --stack-name "uda-frontend" 
+              aws cloudformation delete-stack --stack-name "uda-backend"   
+            fi 
+      
       # Here's where you will add some code to rollback on failure  
 
 
@@ -448,7 +465,7 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-        - deploy-infrastructure
+        # - deploy-infrastructure
       # - deploy-infrastructure:
       #     # requires: [test-frontend]
       #     filters:
@@ -473,6 +490,7 @@ workflows:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
       #     requires: [smoke-test]
+        - cleanup
       # - cleanup:
       #     requires: [cloudfront-update]
       
