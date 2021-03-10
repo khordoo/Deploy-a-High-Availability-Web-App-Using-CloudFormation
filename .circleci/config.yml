@@ -34,10 +34,6 @@ commands:   # Remeebr to use dynamic workflow id in these codes..
             
             MEMSTASH_KEY="migration_<<parameters.workflow_id>>"
             echo $MEMSTASH_KEY
-
-            # revmoe after testing 
-            # MEMSTASH_KEY=udapeople
-            # MEMSTASH_API_TOKEN=7f11eee2-7fe8-4f2b-9e0b-27669fed942e
             SUCCESS=$(curl -H "Content-Type: text/plain" -H "token:${MEMSTASH_API_TOKEN}" --request GET https://api.memstash.io/values/${MEMSTASH_KEY})
             echo $SUCCESS
    
@@ -212,12 +208,14 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - run:
-          name: "Destroy environment"
-          command: |      
-              aws cloudformation delete-stack --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} 
-              aws cloudformation delete-stack --stack-name uda-backend-${CIRCLE_WORKFLOW_ID} 
-          when: on_fail  
+      # - run:
+      #     name: "Destroy environment"
+      #     command: |      
+      #         aws cloudformation delete-stack --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} 
+      #         aws cloudformation delete-stack --stack-name uda-backend-${CIRCLE_WORKFLOW_ID} 
+      #     when: on_fail 
+      - destroy-environment:
+           workflow_id: ${CIRCLE_WORKFLOW_ID}  
 
   configure-infrastructure:
     docker:
@@ -242,7 +240,8 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False
             cd .circleci/ansible
             ansible-playbook -i inventory.txt  configure-server.yml -vvv
-      # Here's where you will add some code to rollback on failure    
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}    
 
   run-migrations:
     docker:
@@ -275,25 +274,29 @@ jobs:
             echo $MEMSTASH_KEY
             curl -H "Content-Type: text/plain" -H "token:${MEMSTASH_API_TOKEN}" --request PUT --data "$(cat backend/migrationStatus.txt)" https://api.memstash.io/values/${MEMSTASH_KEY}
             
-     # Here's where you will add some code to rollback on failure  
+      - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID}   
 
   deploy-frontend:
     docker:
       - image: amazon/aws-cli
+    
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            yum -y install curl
+            yum -y install curl tar gzip
             curl -sL https://rpm.nodesource.com/setup_12.x |  bash -
             yum install -y nodejs  npm  
             cd frontend/
             npm install 
-            # npm run build 
+      - attach_workspace:
+          at: ~/
       - run:
           name: Get backend url
           command: |
+            cat .circleci/ansible/inventory.txt
             export API_URL="http://$(tail -1 .circleci/ansible/inventory.txt):3030"
             echo "${API_URL}"
             pwd
@@ -304,8 +307,9 @@ jobs:
           command: |
             cd frontend
             aws s3 cp  --recursive  dist/  s3://udapeople-${CIRCLE_WORKFLOW_ID}/ 
-      # Remeebr to use WORKD_FLOW_ID in the name of s3
-      # Here's where you will addsome code to rollback on failure    
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
+
   deploy-backend:
     docker:
       - image: williamyeh/ansible:ubuntu18.04
@@ -320,11 +324,12 @@ jobs:
           name: Create Env file
           command: |
             cd /root/project/backend/
+            rm .env -f
             echo NODE_ENV=local > .env
             echo VERSION=1 >>.env
             echo TYPEORM_CONNECTION=postgres >>.env
             echo TYPEORM_MIGRATIONS_DIR=./src/migrations >>.env
-            echo TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity{.ts,.js} >>.env
+            echo TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity.js >>.env
             echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >>.env 
             echo TYPEORM_HOST=$TYPEORM_HOST >>.env 
             echo TYPEORM_PORT=$TYPEORM_PORT >>.env 
@@ -343,7 +348,9 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt  deploy-backend.yml -vvv 
             
-      # Here's where you will add some code to rollback on failure  
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
+      
   smoke-test:
     docker:
       - image: bash
@@ -374,12 +381,12 @@ jobs:
           command: |
             API_URL=http://$(tail -1 .circleci/ansible/inventory.txt):3030/api/status 
             echo $API_URL
-            echo $API_URL > api_url.txt
+            echo $API_URL > .circleci/ansible/api_url.txt
 
       - run:
           name: Backend smoke test.
           command: |
-            if curl -s $(cat api_url.txt) --connect-timeout 5
+            if curl -s $(cat .circleci/ansible/api_url.txt) --connect-timeout 5
             then
                exit 0
             else 
@@ -400,9 +407,7 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
       - revert-migrations:
            workflow_id: ${CIRCLE_WORKFLOW_ID}
-      # Here's where you will add some code to rollback on failure.  
-      # Rmeover to use URL with workflow s3 path.
-  #remeebr use dynamic workflow id for removal..
+   
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
@@ -414,31 +419,52 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
               --tags project=udapeople \
-              --stack-name uda-frontend-${CIRCLE_WORKFLOW_ID} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}      
+              --stack-name uda-cloudfront \
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID}             
       # Here's where you will add some code to rollback on failure  
 
   cleanup:
     docker:
       - image: amazon/aws-cli
     steps:
+      - run:
+          name: set env
+          command: |
+            echo 'export MY_DUMMY="some nice value"' >> $BASH_ENV 
+            source $BASH_ENV
+            export MY_DUMMY_2="another value"
+            echo $MY_DUMMY
+      - run:
+          name: retreivew
+          command: |
+            echo $MY_DUMMY 
+            echo $MY_DUMMY_2     
+
       - checkout
       - run:
           name: Get old stack workflow id
           command: |
-            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[0].Value")
+            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query="Exports[?Name>'WorkflowId'].Value| [0]" | tr -d '"')  
             echo old worflow id is:"${OLD_WORKFLOW_ID}"
-            export OldWorkflowID="${OLD_WORKFLOW_ID}"
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-
+           
+            STACKS_LIST=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)  
+            echo "export OldWorkflowID=${OLD_WORKFLOW_ID}" >> $BASH_ENV
+            echo "export STACKS=${STACKS_LIST}" >> $BASH_ENV
+            source $BASH_ENV
+            echo $OldWorkflowID
+            echo $STACKS
       - run:
           name: Remove old stacks and files
           command: |
+            echo $OldWorkflowID
+            echo $STACKS
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "new is not equal old deployment, so deleting the old deployemn the"
-              aws s3 rm s3://udapeople-${OldWorkflowID}/ --recursive
+              echo $OldWorkflowID
+              echo "s3://udapeople-${OldWorkflowID}/"
+              aws s3 rm "s3://udapeople-${OldWorkflowID}/" --recursive
               aws cloudformation delete-stack --stack-name uda-frontend-${OldWorkflowID}
               aws cloudformation delete-stack --stack-name uda-backend-${OldWorkflowID}   
          
@@ -446,8 +472,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
+      # - build-frontend
+      # - build-backend
       # - test-frontend:
       #     requires: [build-frontend]
       # - test-backend:
@@ -457,26 +483,21 @@ workflows:
       # - scan-frontend:
       #     requires: [build-frontend]
       # - deploy-infrastructure:
-      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
       #       branches:
       #         only: [test-feature-branch]
-      - deploy-infrastructure:
-          requires: [build-frontend, build-backend ]
-          filters:
-            branches:
-              only: [test-feature-branch]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update:
-          requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
+      # - configure-infrastructure:
+      #     requires: [deploy-infrastructure]
+      # - run-migrations:
+      #     requires: [configure-infrastructure]
+      # - deploy-frontend:
+      #     requires: [run-migrations]
+      # - deploy-backend:
+      #     requires: [run-migrations]
+      # - smoke-test:
+      #     requires: [deploy-backend, deploy-frontend]
+      # - cloudfront-update:
+      #     requires: [smoke-test]
+      - cleanup
+         

@@ -36,7 +36,7 @@
   become_user: root
   shell: |
     cd /home/ubuntu/backend
-    export TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity{.ts,.js}
+    export TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity.js
     pm2 start ./dist/main.js -f
 
 
