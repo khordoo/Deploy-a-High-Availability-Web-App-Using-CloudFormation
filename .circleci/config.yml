@@ -427,30 +427,38 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
-            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[0].Value")
-            echo old worflow id is:"${OLD_WORKFLOW_ID}"
-            
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-
-            
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
               --stack-name uda-frontend \
-              --parameter-overrides ID=udapeople-34432dfdfdfggt-new
-            
-            if [[ "${STACKS[@]}" =~ "${OLD_WORKFLOW_ID}"   ]]
+              --parameter-overrides ID=udapeople-34432dfdfdfggt-new      
+      # Here's where you will add some code to rollback on failure  
+
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[0].Value")
+            echo old worflow id is:"${OLD_WORKFLOW_ID}"
+            export OldWorkflowID="${OLD_WORKFLOW_ID}"
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-              echo "new is not equal old deployment delete the"
+              echo "new is not equal old deployment, so deleting the old deployemn the"
               aws s3 rm s3://udapeople-udapeople-34432dfdfdfggt/ --recursive
               aws cloudformation delete-stack --stack-name "uda-frontend" 
               aws cloudformation delete-stack --stack-name "uda-backend"   
-            fi 
-      
-      # Here's where you will add some code to rollback on failure  
-
-
+         
+            fi
 
 workflows:
   default:
