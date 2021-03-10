@@ -23,7 +23,7 @@ commands:   # Remeebr to use dynamic workflow id in these codes..
             aws cloudformation delete-stack --stack-name "uda-backend"  
 
 
-
+  # remove hard code api key and cash id.
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow..
     parameters:
@@ -41,10 +41,10 @@ commands:   # Remeebr to use dynamic workflow id in these codes..
             # revmoe after testing 
             MEMSTASH_KEY=udapeople
             MEMSTASH_API_TOKEN=7f11eee2-7fe8-4f2b-9e0b-27669fed942e
-            SUCCESS=$(curl -H "Content-Type: text/plain" -H "token:${MEMSTASH_API_TOKEN}" --request GET "https://api.memstash.io/values/${MEMSTASH_KEY}")
+            SUCCESS=$(curl -H "Content-Type: text/plain" -H "token:${MEMSTASH_API_TOKEN}" --request GET https://api.memstash.io/values/${MEMSTASH_KEY})
             echo $SUCCESS
-            # SUCCESS = 1
-            if [ $SUCCESS=="1" ]
+   
+            if [ "$SUCCESS" == "1" ]
             then
               cd ~/project/backend
               npm install
@@ -380,7 +380,10 @@ jobs:
             && pip3 install \
                 awscli \
             && rm -rf /var/cache/apk/*
+            apk add --update nodejs npm
             aws --version
+            node --version
+            npm --version
       - run:
           name: Get backend url
           command: |
@@ -415,6 +418,22 @@ jobs:
            workflow_id: udapeople-34432dfdfdfggt
       # Here's where you will add some code to rollback on failure.  
       # Rmeover to use URL with workflow s3 path.
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      # Checkout code from git
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure  
+
+
 
 workflows:
   default:
@@ -429,7 +448,7 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-        # - deploy-infrastructure
+        - deploy-infrastructure
       # - deploy-infrastructure:
       #     # requires: [test-frontend]
       #     filters:
@@ -447,7 +466,7 @@ workflows:
         #     requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
-        - smoke-test
+        # - smoke-test
             # requires: [deploy-infrastructure]
          
       # - smoke-test:
