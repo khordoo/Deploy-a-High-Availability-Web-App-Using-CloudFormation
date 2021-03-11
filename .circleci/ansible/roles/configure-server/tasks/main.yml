@@ -6,3 +6,39 @@
    apt install nodejs npm -y
    npm install pm2 -g -y
    nodejs --version
+
+- name: "Install node exporter"
+  become: true 
+  shell: |
+    echo "install perm" > perm.txt
+    useradd --no-create-home node_exporter
+    wget https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-amd64.tar.gz
+    tar xzf node_exporter-1.0.1.linux-amd64.tar.gz
+    cp node_exporter-1.0.1.linux-amd64/node_exporter /usr/local/bin/node_exporter
+    rm -rf node_exporter-1.0.1.linux-amd64.tar.gz node_exporter-1.0.1.linux-amd64
+
+- name: Create node service file"
+  become: true 
+  shell: | 
+    echo "[Unit]" > ~/service
+    echo Description=Node Exporter >> ~/service
+    echo Wants=network-online.target >> ~/service
+    echo After=network-online.target >> ~/service
+
+    echo [Service] >> ~/service
+    echo User=root >> ~/service
+    echo Type=simple >> ~/service
+    echo ExecStart=/usr/local/bin/node_exporter >> ~/service
+
+    echo [Install] >> ~/service
+    echo WantedBy=multi-user.target >> ~/service
+
+
+- name: "Run node exporter service"
+  become: true 
+  shell: |
+    mv ~/service /etc/systemd/system/node-exporter.service
+    systemctl daemon-reload
+    systemctl enable node-exporter
+    systemctl start node-exporter
+    systemctl status node-exporter
