@@ -421,53 +421,31 @@ jobs:
               --tags project=udapeople \
               --stack-name uda-cloudfront \
               --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID}             
-      # Here's where you will add some code to rollback on failure  
+      # Here's where you will add some code to rollback on failure . 
 
   cleanup:
     docker:
       - image: amazon/aws-cli
     steps:
-      - run:
-          name: set env
-          command: |
-            echo 'export MY_DUMMY="some nice value"' >> $BASH_ENV 
-            source $BASH_ENV
-            export MY_DUMMY_2="another value"
-            echo $MY_DUMMY
-      - run:
-          name: retreivew
-          command: |
-            echo $MY_DUMMY 
-            echo $MY_DUMMY_2     
-
       - checkout
       - run:
           name: Get old stack workflow id
           command: |
-            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query="Exports[?Name>'WorkflowId'].Value| [0]" | tr -d '"')  
+            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query="Exports[?Name>'WorkflowId'].Value| [1]" | tr -d '"')  
             echo old worflow id is:"${OLD_WORKFLOW_ID}"
-           
-            STACKS_LIST=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)  
             echo "export OldWorkflowID=${OLD_WORKFLOW_ID}" >> $BASH_ENV
-            echo "export STACKS=${STACKS_LIST}" >> $BASH_ENV
             source $BASH_ENV
-            echo $OldWorkflowID
-            echo $STACKS
+
       - run:
           name: Remove old stacks and files
           command: |
-            echo $OldWorkflowID
-            echo $STACKS
+            STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-              echo "new is not equal old deployment, so deleting the old deployemn the"
-              echo $OldWorkflowID
-              echo "s3://udapeople-${OldWorkflowID}/"
+              echo "Removing the old stacks"
               aws s3 rm "s3://udapeople-${OldWorkflowID}/" --recursive
               aws cloudformation delete-stack --stack-name uda-frontend-${OldWorkflowID}
               aws cloudformation delete-stack --stack-name uda-backend-${OldWorkflowID}   
-         
             fi
 workflows:
   default:
@@ -480,9 +458,9 @@ workflows:
       #     requires: [build-backend]
       # - scan-backend:
       #     requires: [build-backend]
-      # - scan-frontend:
+      # - scan-frontend:s
       #     requires: [build-frontend]
-      # - deploy-infrastructure:
+      - deploy-infrastructure
       #     # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
       #       branches:
@@ -499,5 +477,6 @@ workflows:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
       #     requires: [smoke-test]
-      - cleanup
+      - cleanup:
+          requires: [deploy-infrastructure]
          
