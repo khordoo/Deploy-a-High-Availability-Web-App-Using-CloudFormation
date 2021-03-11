@@ -1,0 +1,42 @@
+- name: "copy backend files"
+  become: true 
+  copy:
+    src: /root/project/backend.tar.gz
+    dest: /home/ubuntu/
+    owner: ubuntu
+    group: ubuntu
+
+- name: "Uncompress Backend"
+  become: true
+  shell: |
+    tar -xvf /home/ubuntu/backend.tar.gz --strip=2
+    rm -f /home/ubuntu/backend.tar.gz
+   
+- name: "Install dependencies"
+  become: true
+  shell: |
+    apt update
+    apt-get install nodejs npm -y 
+    npm install pm2@latest -g
+    pm2 status
+    node --version
+    pm2 -v
+
+- name: "Build Server"
+  become: true
+  shell: |
+    cd /home/ubuntu/backend
+    npm install
+    npm run build
+
+
+
+- name: "Run Server"
+  become: yes
+  become_user: root
+  shell: |
+    cd /home/ubuntu/backend
+    export TYPEORM_ENTITIES=/home/ubuntu/backend/dist/modules/domain/**/*.entity.js
+    pm2 start ./dist/main.js -f
+
+

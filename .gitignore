@@ -68,3 +68,5 @@ node_modules
 
 .env
 dist
+.circleci/ansible/inventory.txt
+.circleci/ansible/spark.pem
